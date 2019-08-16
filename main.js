@@ -1,4 +1,6 @@
 var fs =  require('fs')
+var SETTINGS_EXAMPLE_PATH ="packages://bundle/bundleSettings.json"
+var SETTINGS_PATH =Editor.Project.path+"/bundleSettings.json"
 var uuidMap ={}
 var rawMap ={}
 var settings
@@ -67,10 +69,18 @@ function getDepList(uuid){
   queryJson(jsonObj)
 }
 function loadSettings(){
-  var url = Editor.url("packages://bundle/bundleSettings.json")
+  var url = SETTINGS_PATH
+  var isexists =fs.existsSync(url)
+  if(!isexists){
+    fs.writeFileSync(url,fs.readFileSync(Editor.url(SETTINGS_EXAMPLE_PATH)))
+  }
   var jsonString = fs.readFileSync(url)
   var json=JSON.parse(jsonString)
   settings = json
+}
+function saveSettings(){
+  var url = SETTINGS_PATH
+  fs.writeFileSync(url,JSON.stringify(settings))
 }
 
 function setBundle(arg){
@@ -83,7 +93,7 @@ function setBundle(arg){
       settings.bundleToUuid.splice(orginBundleIdx,1)
       settings.bundleIdList.splice(orginBundleIdx,1)
     }
-    settings.uuidToBundle[arg.uuid] =null
+    delete settings.uuidToBundle[arg.uuid]
   }
   function addBundle(){
     var idx = settings.bundleIdList.indexOf(arg.bundleId)
@@ -116,12 +126,11 @@ function setBundle(arg){
 }
 module.exports = {
   load () {
-      //
-      loadSettings()
+    loadSettings()
   },
 
   unload () {
-     //
+    saveSettings()
   },
 
   messages: {
@@ -136,7 +145,10 @@ module.exports = {
     },
     'setBundle'(event,arg){
       setBundle(arg)
-      event.reply(null,JSON.stringify(settings))
+      saveSettings()
+      var s = JSON.stringify(settings)
+      Editor.log(s)
+      event.reply(null,s)
     }
   },
 };
