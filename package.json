@@ -1,0 +1,19 @@
+{
+    "name": "bundle",
+    "version": "0.0.1",
+    "description": "",
+    "author": "Damian",
+    "main": "main.js",
+    "main-menu": {
+      "Panel/Simple Panel": {
+        "message": "bundle:open"
+      }
+    },
+    "panel": {
+    "main": "panel/index.js",
+    "type": "dockable",
+    "title": "Asset Bundle",
+    "width": 400,
+    "height": 300
+    }
+}
