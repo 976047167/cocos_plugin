@@ -147,7 +147,6 @@ module.exports = {
       setBundle(arg)
       saveSettings()
       var s = JSON.stringify(settings)
-      Editor.log(s)
       event.reply(null,s)
     }
   },

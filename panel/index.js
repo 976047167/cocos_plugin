@@ -44,7 +44,7 @@ var panel ={
       Editor.Ipc.sendToMain('bundle:showDep',this.$select.value)
     });
     this.$asset.addEventListener('change',()=>{
-      Editor.log(this.$asset.value)
+      this.chosen()
     })
     this.$btnAdd.addEventListener('confirm',()=>{
       if (!this.$input.value) {
@@ -72,7 +72,6 @@ var panel ={
     })
   },
   run(argv){
-    // temp.select.empty()
     var settings = JSON.parse(argv)
     logic.settings = settings
     var optionLength= this.$select.options.length;
