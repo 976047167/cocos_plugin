@@ -17,13 +17,15 @@ var panel ={
     <h2>AssetBundle</h2>
     <hr />
     <div>uuid: <span id="label">--</span></div>
+    <hr />
     <br />
     <ui-asset id="asset" class="flex-1" type="prefab" droppable="asset"></ui-asset>
     <ui-input id="input" placeholder="bundle"></ui-input>
     <ui-button id="btnAdd">set bundle</ui-button>
     <ui-button id="btnDel">delete</ui-button>
     <hr />
-    <select id="select" value="-1"> </select>
+    <div id="area" > </div>
+    <ui-select id="select" value="-1"> </ui-select>
     <ui-button id="btn">show depends</ui-button>
     <hr />
     <ui-input id="input2" placeholder="resources/table/"></ui-input>
@@ -39,7 +41,8 @@ var panel ={
     input:'#input',
     btnAdd:'#btnAdd',
     btnDel:'#btnDel',
-    btnExport:'#btnExport'
+    btnExport:'#btnExport',
+    area:"#area"
   },
 
   ready () {
@@ -80,17 +83,24 @@ var panel ={
   run(argv){
     var settings = JSON.parse(argv)
     logic.settings = settings
-    var optionLength= this.$select.options.length;
-    for(var i=0;i <optionLength;i++)
-    {
-      this.$select.remove(0);
-    }
+    this.$select.innerHTML=""
+    this.$area.innerHTML = ''
     for(var i=0;i <settings.bundleIdList.length;i++)
     {
       var option = document.createElement("option")
       option.text = settings.bundleIdList[i]
       option.value = i
-      this.$select.add(option)
+      this.$select.appendChild(option)
+      var csstxt = "<ui-section folded=true readonly=true>"
+      csstxt+='<div class="header">'+settings.bundleIdList[i]+'</div>'
+      csstxt+='<br />'
+      for (var j = 0;j<settings.bundleToUuid[i].length;j++){
+        var id = settings.bundleToUuid[i][j]
+        csstxt += "<ui-asset value="+ id+"></ui-asset>"
+        csstxt+='<br />'
+      }
+      csstxt+= "</ui-section>"
+      this.$area.innerHTML += csstxt
     }
   },
   chosen(){

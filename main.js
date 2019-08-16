@@ -19,6 +19,7 @@ function showDep(bundleId){
 }
 function getDepList(uuid){
   var fspath = Editor.assetdb.uuidToFspath(uuid)
+  var path = Editor.assetdb.uuidToUrl(uuid)
   var info = Editor.assetdb.assetInfoByUuid(uuid)
   var type =info.type
   var isSub = info.isSubAsset
@@ -27,24 +28,24 @@ function getDepList(uuid){
   }
   // Editor.log(uuid)
   // Editor.log(type)
-  uuidMap[uuid] =fspath
+  uuidMap[uuid] =path
   if(type === 'sprite-atlas'){
     uuid = Editor.assetdb.loadMetaByUuid(uuid).rawTextureUuid
-    rawMap[uuid] = Editor.assetdb.uuidToFspath(uuid)
-    uuidMap[uuid] =Editor.assetdb.uuidToFspath(uuid)
+    rawMap[uuid] = Editor.assetdb.uuidToUrl(uuid)
+    uuidMap[uuid] =Editor.assetdb.uuidToUrl(uuid)
     return
   }
   if(type === 'bitmap-font'){
     uuid = Editor.assetdb.loadMetaByUuid(uuid).textureUuid
-    rawMap[uuid] = Editor.assetdb.uuidToFspath(uuid)
-    uuidMap[uuid] =Editor.assetdb.uuidToFspath(uuid)
+    rawMap[uuid] = Editor.assetdb.uuidToUrl(uuid)
+    uuidMap[uuid] =Editor.assetdb.uuidToUrl(uuid)
     return
   }
   if(type === 'effect'){
     return
   }
   if(type !== 'prefab' && type !== 'material' && type !== 'animation-clip'){
-    rawMap[uuid]=fspath
+    rawMap[uuid]=path
     return
   }
   function queryJson(obj){
@@ -129,12 +130,23 @@ function exportSettings(){
   var data = {}
   for(var i=0;i<l;i++){
     showDep(i)
-    data[settings.bundleIdList[i]]=rawMap
+    // var list =[]
+    // for (var key in rawMap) {
+    //   if (rawMap.hasOwnProperty(key)) {
+    //     var element = rawMap[key];
+    //     list.push(element)
+
+    //   }
+    // }
+    data[settings.bundleIdList[i]]=uuidMap
   }
-  Editor.log(data)
-  var url =Editor.url("db://assets/resouces/table/t_bundle.json")
-  Editor.log(url)
-  fs.writeFileSync(url,JSON.stringify(data))
+  var url ="db://assets/resources/table/t_bundle.json"
+  var exisit = Editor.assetdb.exists(url);
+  if(exisit){
+    Editor.assetdb.saveExists(url,JSON.stringify(data))
+  }else{
+    Editor.assetdb.create(url,JSON.stringify(data))
+  }
 }
 module.exports = {
   load () {
