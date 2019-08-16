@@ -148,6 +148,29 @@ function exportSettings(){
     Editor.assetdb.create(url,JSON.stringify(data))
   }
 }
+
+
+function buildTree(uuid,parent,tree){
+        // if (tree.length === 1) {
+        //     return tree[0];
+        // }
+        // const left = tree.pop();
+        // const right = tree.pop();
+        // const newTreeNode = {
+        //     left,
+        //     right,
+        //     char: -1,
+        //     value: newValue,
+        // };
+        // let i = 0;
+        // while (i < tree.length && newValue < tree[i].value ) {
+        //     i++;
+        // }
+        // tree.splice(i, 0, newTreeNode);
+        // return buildTree(tree);
+}
+
+
 module.exports = {
   load () {
     loadSettings()
