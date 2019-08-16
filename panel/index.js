@@ -26,6 +26,9 @@ var panel ={
     <select id="select" value="-1"> </select>
     <ui-button id="btn">show depends</ui-button>
     <hr />
+    <ui-input id="input2" placeholder="resources/table/"></ui-input>
+    <ui-button id="btnExport">export</ui-button>
+
   `,
 
   $: {
@@ -35,7 +38,8 @@ var panel ={
     asset:'#asset',
     input:'#input',
     btnAdd:'#btnAdd',
-    btnDel:'#btnDel'
+    btnDel:'#btnDel',
+    btnExport:'#btnExport'
   },
 
   ready () {
@@ -68,7 +72,9 @@ var panel ={
         Editor.Ipc.sendToMain("bundle:setBundle",msg,(err,argv)=>{
           this.run(argv)
         })
-
+    })
+    this.$btnExport.addEventListener('confirm',()=>{
+        Editor.Ipc.sendToMain("bundle:export")
     })
   },
   run(argv){

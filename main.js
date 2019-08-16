@@ -124,6 +124,18 @@ function setBundle(arg){
   deleteBundle()
   addBundle()
 }
+function exportSettings(){
+  var l = settings.bundleToUuid.length
+  var data = {}
+  for(var i=0;i<l;i++){
+    showDep(i)
+    data[settings.bundleIdList[i]]=rawMap
+  }
+  Editor.log(data)
+  var url =Editor.url("db://assets/resouces/table/t_bundle.json")
+  Editor.log(url)
+  fs.writeFileSync(url,JSON.stringify(data))
+}
 module.exports = {
   load () {
     loadSettings()
@@ -148,6 +160,9 @@ module.exports = {
       saveSettings()
       var s = JSON.stringify(settings)
       event.reply(null,s)
+    },
+    'export'(){
+      exportSettings()
     }
   },
 };
