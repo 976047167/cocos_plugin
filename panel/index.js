@@ -107,7 +107,7 @@ var panel ={
       logic.uuid =  this.$asset.value
       this.$label.innerText = logic.uuid
       var bundleId = logic.settings.uuidToBundle[logic.uuid]
-      if(bundleId){
+      if(bundleId !== undefined){
         this.$input.value = logic.settings.bundleIdList[bundleId]
       }
 
