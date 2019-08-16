@@ -72,7 +72,6 @@ var panel ={
     })
   },
   run(argv){
-    Editor.log(argv)
     // temp.select.empty()
     var settings = JSON.parse(argv)
     logic.settings = settings
