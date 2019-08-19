@@ -1,23 +1,35 @@
 var fs =  require('fs')
 var SETTINGS_EXAMPLE_PATH ="packages://bundle/bundleSettings.json"
-var SETTINGS_PATH =Editor.Project.path+"/bundleSettings.json"
+var SETTINGS_PATH =Editor.Project.path + "/bundleSettings.json"
 var uuidMap ={}
 var rawMap ={}
 var settings
-function showDep(bundleId){
+function getDep(bundleId){
   uuidMap ={}
   rawMap ={}
   if(!settings.bundleToUuid || !settings.bundleToUuid[bundleId]){
     return
   }
   settings.bundleToUuid[bundleId].forEach(uuid => {
-    getDepList(uuid)
+    queryDepList(uuid)
   });
   Editor.log(uuidMap)
   Editor.log(rawMap)
 
 }
-function getDepList(uuid){
+function getTree(bundleId){
+  if(!settings.bundleToUuid || !settings.bundleToUuid[bundleId]){
+    return
+  }
+  var result =[]
+  settings.bundleToUuid[bundleId].forEach(uuid => {
+    var tree = buildTree(uuid)
+    result.push(tree)
+    Editor.log(JSON.stringify(tree))
+  });
+  return result
+}
+function queryDepList(uuid,parent){
   var fspath = Editor.assetdb.uuidToFspath(uuid)
   var path = Editor.assetdb.uuidToUrl(uuid)
   var info = Editor.assetdb.assetInfoByUuid(uuid)
@@ -26,8 +38,6 @@ function getDepList(uuid){
   if(isSub){
     return
   }
-  // Editor.log(uuid)
-  // Editor.log(type)
   uuidMap[uuid] =path
   if(type === 'sprite-atlas'){
     uuid = Editor.assetdb.loadMetaByUuid(uuid).rawTextureUuid
@@ -58,7 +68,7 @@ function getDepList(uuid){
         }
         else if(key === '__uuid__'){
           if(!uuidMap[element]){
-            getDepList(element)
+            queryDepList(element)
           }
 
         }
@@ -125,22 +135,17 @@ function setBundle(arg){
   deleteBundle()
   addBundle()
 }
-function exportSettings(){
+function exportSettings(url){
   var l = settings.bundleToUuid.length
   var data = {}
   for(var i=0;i<l;i++){
-    showDep(i)
-    // var list =[]
-    // for (var key in rawMap) {
-    //   if (rawMap.hasOwnProperty(key)) {
-    //     var element = rawMap[key];
-    //     list.push(element)
-
-    //   }
-    // }
-    data[settings.bundleIdList[i]]=uuidMap
+    var node = getTree(i)
+    data[settings.bundleIdList[i]]=node
   }
-  var url ="db://assets/resources/table/t_bundle.json"
+  Editor.log(data)
+  if(!url){
+    url ="db://assets/resources/table/t_bundle.json"
+  }
   var exisit = Editor.assetdb.exists(url);
   if(exisit){
     Editor.assetdb.saveExists(url,JSON.stringify(data))
@@ -150,24 +155,55 @@ function exportSettings(){
 }
 
 
-function buildTree(uuid,parent,tree){
-        // if (tree.length === 1) {
-        //     return tree[0];
-        // }
-        // const left = tree.pop();
-        // const right = tree.pop();
-        // const newTreeNode = {
-        //     left,
-        //     right,
-        //     char: -1,
-        //     value: newValue,
-        // };
-        // let i = 0;
-        // while (i < tree.length && newValue < tree[i].value ) {
-        //     i++;
-        // }
-        // tree.splice(i, 0, newTreeNode);
-        // return buildTree(tree);
+function buildTree(uuid,parent){
+  var fspath = Editor.assetdb.uuidToFspath(uuid)
+  var path = Editor.assetdb.uuidToUrl(uuid)
+  var info = Editor.assetdb.assetInfoByUuid(uuid)
+  var type =info.type
+  var isSub = info.isSubAsset
+  var treeNode = {
+    uuid:uuid,
+    path:path,
+    children:[],
+    type:type
+  }
+  if(isSub){
+    return treeNode
+  }
+  if(type === 'sprite-atlas'){
+    return treeNode
+  }
+  if(type === 'bitmap-font'){
+    return treeNode
+  }
+  if(type === 'effect'){
+    return treeNode
+  }
+  if(type !== 'prefab' && type !== 'material' && type !== 'animation-clip'){
+    return treeNode
+  }
+
+  function queryTreeJson(obj){
+    for (const key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        const element = obj[key];
+        // Editor.log(typeof(element))
+        if (typeof (element) === 'object'){
+          queryTreeJson(element)
+        }
+        else if(key === '__uuid__'){
+          if(element !== uuid){
+            var child = buildTree(element,treeNode)
+            treeNode.children.push(child)
+          }
+        }
+      }
+    }
+  }
+  var jsonString = fs.readFileSync(fspath)
+  var jsonObj=JSON.parse(jsonString)
+  queryTreeJson(jsonObj)
+  return treeNode
 }
 
 
@@ -181,8 +217,11 @@ module.exports = {
   },
 
   messages: {
-    'showDep' (_,uuid) {
-      showDep(uuid);
+    'showDep' (_,bundleId) {
+      getDep(bundleId);
+    },
+    'showTree' (_,bundleId){
+      getTree(bundleId)
     },
     'open'() {
       Editor.Panel.open('bundle',JSON.stringify(settings));
@@ -196,8 +235,8 @@ module.exports = {
       var s = JSON.stringify(settings)
       event.reply(null,s)
     },
-    'export'(){
-      exportSettings()
+    'export'(_,url){
+      exportSettings(url)
     }
   },
 };

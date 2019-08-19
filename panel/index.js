@@ -27,6 +27,7 @@ var panel ={
     <div id="area" > </div>
     <ui-select id="select" value="-1"> </ui-select>
     <ui-button id="btn">show depends</ui-button>
+    <ui-button id="btnTree">show tree</ui-button>
     <hr />
     <ui-input id="input2" placeholder="resources/table/"></ui-input>
     <ui-button id="btnExport">export</ui-button>
@@ -42,7 +43,9 @@ var panel ={
     btnAdd:'#btnAdd',
     btnDel:'#btnDel',
     btnExport:'#btnExport',
-    area:"#area"
+    area:"#area",
+    btnTree:"#btnTree",
+    input2:"#input2"
   },
 
   ready () {
@@ -77,7 +80,10 @@ var panel ={
         })
     })
     this.$btnExport.addEventListener('confirm',()=>{
-        Editor.Ipc.sendToMain("bundle:export")
+        Editor.Ipc.sendToMain("bundle:export",this.$input2.value)
+    })
+    this.$btnTree.addEventListener('confirm',()=>{
+        Editor.Ipc.sendToMain('bundle:showTree',this.$select.value)
     })
   },
   run(argv){
