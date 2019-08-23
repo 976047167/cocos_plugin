@@ -11,6 +11,18 @@ var panel ={
   style: `
     :host { margin: 5px; }
     h2 { color: #f90; }
+    .mid {
+      flex: 1;
+      height: 60%;
+      overflow: scroll;
+    }
+    .contain {
+
+      flex-direction :column;
+      display: flex;
+      height: 80%;
+      overflow: scroll;
+    }
   `,
 
   template: `
@@ -24,14 +36,13 @@ var panel ={
     <ui-button id="btnAdd">set bundle</ui-button>
     <ui-button id="btnDel">delete</ui-button>
     <hr />
-    <div id="area" > </div>
+    <div id="area" class="mid" > </div>
     <ui-select id="select" value="-1"> </ui-select>
     <ui-button id="btn">show depends</ui-button>
     <ui-button id="btnTree">show tree</ui-button>
     <hr />
     <ui-input id="input2" placeholder="resources/table/"></ui-input>
     <ui-button id="btnExport">export</ui-button>
-
   `,
 
   $: {
@@ -99,13 +110,16 @@ var panel ={
       this.$select.appendChild(option)
       var csstxt = "<ui-section folded=true readonly=true>"
       csstxt+='<div class="header">'+settings.bundleIdList[i]+'</div>'
+      csstxt+='<div class="contain">'
       csstxt+='<br />'
       for (var j = 0;j<settings.bundleToUuid[i].length;j++){
         var id = settings.bundleToUuid[i][j]
         csstxt += "<ui-asset value="+ id+"></ui-asset>"
         csstxt+='<br />'
       }
+      csstxt+='</div>'
       csstxt+= "</ui-section>"
+
       this.$area.innerHTML += csstxt
     }
   },
