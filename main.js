@@ -26,7 +26,6 @@ function getTree(bundleId){
   settings.bundleToUuid[bundleId].forEach(uuid => {
     var tree = buildTree(uuid)
     result.push(tree)
-    Editor.log(JSON.stringify(tree))
   });
   return result
 }
@@ -96,7 +95,6 @@ function saveSettings(){
 }
 
 function setBundle(arg){
-  Editor.log(arg)
   var info = Editor.assetdb.assetInfoByUuid(arg.uuid)
   if(info.type === "folder"){
     var filelist =fs.readdirSync(info.path)
@@ -104,7 +102,6 @@ function setBundle(arg){
       var newArg = {}
       newArg.bundleId = arg.bundleId
       var newPath = path_module.join(info.path,f)
-      Editor.log(newPath)
       var newUUid =  Editor.assetdb.fspathToUuid(newPath)
       if(!newUUid) return
       newArg.uuid =newUUid
@@ -159,7 +156,6 @@ function exportSettings(url){
     var node = getTree(i)
     data[settings.bundleIdList[i]]=node
   }
-  Editor.log("111111111111111111111")
   if(!url){
     url ="db://assets/resources/table/t_bundle.json"
   }
