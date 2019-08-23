@@ -186,7 +186,7 @@ function buildTree(uuid,parent){
     type:type
   }
   if(isSub){
-    return treeNode
+    return
   }
   if(type === 'sprite-atlas'){
     return treeNode
@@ -212,7 +212,7 @@ function buildTree(uuid,parent){
         else if(key === '__uuid__'){
           if(element !== uuid){
             var child = buildTree(element,treeNode)
-            treeNode.children.push(child)
+            if(child) treeNode.children.push(child)
           }
         }
       }
