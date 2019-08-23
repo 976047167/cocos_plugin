@@ -1,4 +1,5 @@
 var fs =  require('fs')
+var path_module = require('path')
 var SETTINGS_EXAMPLE_PATH ="packages://bundle/bundleSettings.json"
 var SETTINGS_PATH =Editor.Project.path + "/bundleSettings.json"
 var uuidMap ={}
@@ -95,6 +96,22 @@ function saveSettings(){
 }
 
 function setBundle(arg){
+  Editor.log(arg)
+  var info = Editor.assetdb.assetInfoByUuid(arg.uuid)
+  if(info.type === "folder"){
+    var filelist =fs.readdirSync(info.path)
+    filelist.forEach((f=>{
+      var newArg = {}
+      newArg.bundleId = arg.bundleId
+      var newPath = path_module.join(info.path,f)
+      Editor.log(newPath)
+      var newUUid =  Editor.assetdb.fspathToUuid(newPath)
+      if(!newUUid) return
+      newArg.uuid =newUUid
+      setBundle(newArg)
+    }))
+    return
+  }
   var orginBundleIdx  = null
   function deleteBundle(){
     settings.bundleToUuid[orginBundleIdx]= settings.bundleToUuid[orginBundleIdx].filter((b)=>{
@@ -142,7 +159,7 @@ function exportSettings(url){
     var node = getTree(i)
     data[settings.bundleIdList[i]]=node
   }
-  Editor.log(data)
+  Editor.log("111111111111111111111")
   if(!url){
     url ="db://assets/resources/table/t_bundle.json"
   }
@@ -157,6 +174,11 @@ function exportSettings(url){
 
 function buildTree(uuid,parent){
   var fspath = Editor.assetdb.uuidToFspath(uuid)
+  if(!fspath) {
+    Editor.warn(uuid)
+    Editor.warn(parent.path)
+    return
+  }
   var path = Editor.assetdb.uuidToUrl(uuid)
   var info = Editor.assetdb.assetInfoByUuid(uuid)
   var type =info.type
@@ -206,6 +228,10 @@ function buildTree(uuid,parent){
   return treeNode
 }
 
+function test(){
+  // var info = Editor.assetdb.assetInfoByUuid("842b09e6-8c5f-4a15-a001-c34c88e7faa2")
+  // Editor.log(info)
+}
 
 module.exports = {
   load () {
@@ -224,6 +250,7 @@ module.exports = {
       getTree(bundleId)
     },
     'open'() {
+      test()
       Editor.Panel.open('bundle',JSON.stringify(settings));
     },
     'scene:enter-prefab-edit-mode'(event,arg){

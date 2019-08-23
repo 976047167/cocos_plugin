@@ -31,7 +31,7 @@ var panel ={
     <div>uuid: <span id="label">--</span></div>
     <hr />
     <br />
-    <ui-asset id="asset" class="flex-1" type="asset" droppable="asset"></ui-asset>
+    <ui-asset id="asset" class="flex-1" type="folder" droppable="asset"></ui-asset>
     <ui-input id="input" placeholder="bundle"></ui-input>
     <ui-button id="btnAdd">set bundle</ui-button>
     <ui-button id="btnDel">delete</ui-button>
