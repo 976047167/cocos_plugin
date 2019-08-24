@@ -1,5 +1,7 @@
 var fs =  require('fs')
 var path_module = require('path')
+var crypto = require("crypto");
+const BASE64_KEYS= 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/='
 var SETTINGS_EXAMPLE_PATH ="packages://bundle/bundleSettings.json"
 var SETTINGS_PATH =Editor.Project.path + "/bundleSettings.json"
 var uuidMap ={}
@@ -179,15 +181,21 @@ function buildTree(uuid,parent){
   var info = Editor.assetdb.assetInfoByUuid(uuid)
   var type =info.type
   var isSub = info.isSubAsset
+  var encodeId = encode(uuid.split("-").join(""))
   var treeNode = {
     uuid:uuid,
     path:path,
     children:[],
-    type:type
+    type:type,
+    md5:"",
+    encodeId:encodeId
   }
   if(isSub){
     return
   }
+
+  var jsonString = fs.readFileSync(fspath)
+  treeNode.md5 = crypto.createHash("md5").update(jsonString || "", "latin1").digest("hex").slice(0, 5);
   if(type === 'sprite-atlas'){
     return treeNode
   }
@@ -218,12 +226,34 @@ function buildTree(uuid,parent){
       }
     }
   }
-  var jsonString = fs.readFileSync(fspath)
   var jsonObj=JSON.parse(jsonString)
   queryTreeJson(jsonObj)
   return treeNode
 }
+function encode(guild_str) {
+    let testInput = guild_str
+    let testoutput = []
 
+    testoutput[0] = testInput[0]
+    testoutput[1] = testInput[1]
+
+    for (var i = 2, j = 2; i < 32; i += 3) {
+		var l1 = testInput[i + 0]
+		var l2 = testInput[i + 1]
+		var l3 = testInput[i + 2]
+
+		var n1 = parseInt(l1, 16)
+		var n2 = parseInt(l2, 16)
+		var n3 = parseInt(l3, 16)
+
+		var lhs = n1 << 2 | n2 >> 2
+		var rhs = (n2 & 3) << 4 | (n3 & 0xF)
+		testoutput[j++] = BASE64_KEYS[lhs]
+		testoutput[j++] = BASE64_KEYS[rhs]
+	}
+
+	return testoutput.join("");
+}
 function test(){
   // var info = Editor.assetdb.assetInfoByUuid("842b09e6-8c5f-4a15-a001-c34c88e7faa2")
   // Editor.log(info)
