@@ -1,11 +1,11 @@
 {
     "name": "bundle",
     "version": "0.0.1",
-    "description": "",
+  "description": "",
     "author": "Damian",
     "main": "main.js",
     "main-menu": {
-      "Panel/Simple Panel": {
+      "bundle/开启": {
         "message": "bundle:open"
       }
     },
