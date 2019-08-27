@@ -180,7 +180,6 @@ function buildTree(uuid,parent){
   var path = Editor.assetdb.uuidToUrl(uuid)
   var info = Editor.assetdb.assetInfoByUuid(uuid)
   var type =info.type
-  var isSub = info.isSubAsset
   var encodeId = encode(uuid.split("-").join(""))
   var treeNode = {
     uuid:uuid,
@@ -190,21 +189,22 @@ function buildTree(uuid,parent){
     md5:"",
     encodeId:encodeId
   }
-  if(isSub){
-    return
-  }
 
-  var jsonString = fs.readFileSync(fspath)
-  treeNode.md5 = crypto.createHash("md5").update(jsonString || "", "latin1").digest("hex").slice(0, 5);
-  if(type === 'sprite-atlas'){
-    return treeNode
+  if(type === 'sprite-frame'){
+    uuid = Editor.assetdb.loadMetaByUuid(uuid).rawTextureUuid
+    treeNode.uuid = uuid
+    treeNode.path = Editor.assetdb.uuidToUrl(uuid)
+    fspath =  Editor.assetdb.uuidToFspath(uuid)
   }
   if(type === 'bitmap-font'){
-    return treeNode
+    uuid = Editor.assetdb.loadMetaByUuid(uuid).textureUuid
+    treeNode.uuid = uuid
+    treeNode.path = Editor.assetdb.uuidToUrl(uuid)
+    fspath =  Editor.assetdb.uuidToFspath(uuid)
   }
-  if(type === 'effect'){
-    return treeNode
-  }
+  var jsonString = fs.readFileSync(fspath)
+  treeNode.md5 = crypto.createHash("md5").update(jsonString || "", "latin1").digest("hex").slice(0, 5);
+
   if(type !== 'prefab' && type !== 'material' && type !== 'animation-clip'){
     return treeNode
   }
