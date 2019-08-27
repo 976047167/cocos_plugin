@@ -161,6 +161,9 @@ function exportSettings(url){
   if(!url){
     url ="db://assets/resources/table/t_bundle.json"
   }
+  if(!url.startsWith("db://")){
+    url="db://"+url
+  }
   var exisit = Editor.assetdb.exists(url);
   if(exisit){
     Editor.assetdb.saveExists(url,JSON.stringify(data))
