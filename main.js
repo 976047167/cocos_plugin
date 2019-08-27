@@ -37,11 +37,8 @@ function queryDepList(uuid,parent){
   var info = Editor.assetdb.assetInfoByUuid(uuid)
   var type =info.type
   var isSub = info.isSubAsset
-  if(isSub){
-    return
-  }
   uuidMap[uuid] =path
-  if(type === 'sprite-atlas'){
+  if(type === 'sprite-atlas' || type === 'sprite-frame' ){
     uuid = Editor.assetdb.loadMetaByUuid(uuid).rawTextureUuid
     rawMap[uuid] = Editor.assetdb.uuidToUrl(uuid)
     uuidMap[uuid] =Editor.assetdb.uuidToUrl(uuid)
@@ -159,7 +156,7 @@ function exportSettings(url){
     data[settings.bundleIdList[i]]=node
   }
   if(!url){
-    url ="db://assets/resources/table/t_bundle.json"
+    url ="db://assets/resources/t_bundle.json"
   }
   if(!url.startsWith("db://")){
     url="db://"+url
