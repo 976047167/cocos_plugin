@@ -80,9 +80,6 @@ var panel ={
         })
     })
     this.$btnDel.addEventListener('confirm',()=>{
-      if (!this.$input.value) {
-        return
-      }
       var msg ={
           uuid:logic.uuid,
         }

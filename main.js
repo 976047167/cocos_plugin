@@ -108,7 +108,7 @@ function setBundle(arg){
     }))
     return
   }
-  var orginBundleIdx  = null
+  var orginBundleIdx  = undefined
   function deleteBundle(){
     settings.bundleToUuid[orginBundleIdx]= settings.bundleToUuid[orginBundleIdx].filter((b)=>{
       return b !== arg.uuid
@@ -120,6 +120,9 @@ function setBundle(arg){
     delete settings.uuidToBundle[arg.uuid]
   }
   function addBundle(){
+    if(arg.bundleId === null || arg.bundleId === undefined){
+      return
+    }
     var idx = settings.bundleIdList.indexOf(arg.bundleId)
     if(idx === -1){
       settings.bundleIdList.push(arg.bundleId)
@@ -134,14 +137,13 @@ function setBundle(arg){
   }
 
 
-
   if(!arg || !arg.uuid ) return
   orginBundleIdx = settings.uuidToBundle[arg.uuid]
-  if(!arg.bundleId && orginBundleIdx !== null){
+  if(!arg.bundleId && orginBundleIdx !== undefined){
     deleteBundle()
     return
   }
-  if(orginBundleIdx ==null){
+  if(orginBundleIdx ==undefined){
     addBundle()
     return
   }
