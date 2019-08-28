@@ -267,7 +267,6 @@ module.exports = {
   },
 
   unload () {
-    saveSettings()
   },
 
   messages: {
@@ -286,12 +285,19 @@ module.exports = {
     },
     'setBundle'(event,arg){
       setBundle(arg)
-      saveSettings()
       var s = JSON.stringify(settings)
       event.reply(null,s)
     },
     'export'(_,url){
       exportSettings(url)
+    },
+    'save'(){
+      saveSettings()
+    },
+    'cancel'(event){
+      loadSettings()
+      var s = JSON.stringify(settings)
+      event.reply(null,s)
     }
   },
 };

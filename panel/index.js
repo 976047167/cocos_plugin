@@ -17,7 +17,6 @@ var panel ={
       overflow: scroll;
     }
     .contain {
-
       flex-direction :column;
       display: flex;
       height: 80%;
@@ -28,7 +27,7 @@ var panel ={
   template: `
     <h2>AssetBundle</h2>
     <hr />
-    <div>uuid: <span id="label">--</span></div>
+    uuid: <span id="label">--</span>
     <hr />
     <br />
     <ui-asset id="asset" class="flex-1" type="folder" droppable="asset"></ui-asset>
@@ -43,6 +42,9 @@ var panel ={
     <hr />
     <ui-input id="input2" placeholder="resources/table/"></ui-input>
     <ui-button id="btnExport">export</ui-button>
+    <hr />
+    <ui-button id="btnSave">save</ui-button>
+    <ui-button id="btnCancel">cancel</ui-button>
   `,
 
   $: {
@@ -56,7 +58,9 @@ var panel ={
     btnExport:'#btnExport',
     area:"#area",
     btnTree:"#btnTree",
-    input2:"#input2"
+    input2:"#input2",
+    btnSave:"#btnSave",
+    btnCancel:"#btnCancel"
   },
 
   ready () {
@@ -92,6 +96,14 @@ var panel ={
     })
     this.$btnTree.addEventListener('confirm',()=>{
         Editor.Ipc.sendToMain('bundle:showTree',this.$select.value)
+    })
+    this.$btnSave.addEventListener('confirm',()=>{
+        Editor.Ipc.sendToMain('bundle:save')
+    })
+    this.$btnCancel.addEventListener('confirm',null,()=>{
+        Editor.Ipc.sendToMain('bundle:cancel',(err,argv)=>{
+          this.run(argv)
+        })
     })
   },
   run(argv){
