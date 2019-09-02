@@ -1,4 +1,53 @@
 // panel/index.js
+var section = Editor.UI.registerElement('seting-section', {
+  bundleId:0,
+  style:`
+    :host { margin: 5px; }
+    .contain {
+      flex-direction :column;
+      display: flex;
+      height: 80%;
+      overflow: scroll;
+    } `,
+  template: `
+    <ui-section folded=true readonly=true>
+    <div class="header" id="title">
+    </div>
+    <ui-checkbox id="checkbox">keep</ui-checkbox>
+    <div class="contain" id="list">
+    <br />
+    </div>
+    </ui-section>
+  `,
+
+  $: {
+    checkbox:"#checkbox",
+    title:"#title",
+    list:"#list"
+  },
+
+  factoryImpl (settings ,i) {
+    this.bundleId =i
+    this.$checkbox.checked = !!settings.bundleKeepMark[i]
+    this.$title.innerHTML=settings.bundleIdList[i]+this.$title.innerHTML
+    let csstxt =""
+    for (var j = 0;j<settings.bundleToUuid[i].length;j++){
+      var id = settings.bundleToUuid[i][j]
+      csstxt+= "<ui-asset value="+ id+"></ui-asset><br />"
+    }
+    this.$list.innerHTML+=csstxt
+  },
+  ready(){
+      this.$checkbox.addEventListener('change',()=>{
+      const arg={
+        bundleId:this.bundleId,
+        keep:this.$checkbox.checked
+      }
+      Editor.Ipc.sendToMain("bundle:keep",arg)
+    })
+  }
+});
+
 var logic={
   uuid:null,
   settings:null,
@@ -14,12 +63,6 @@ var panel ={
     .mid {
       flex: 1;
       height: 60%;
-      overflow: scroll;
-    }
-    .contain {
-      flex-direction :column;
-      display: flex;
-      height: 80%;
       overflow: scroll;
     }
   `,
@@ -60,7 +103,7 @@ var panel ={
     btnTree:"#btnTree",
     input2:"#input2",
     btnSave:"#btnSave",
-    btnCancel:"#btnCancel"
+    btnCancel:"#btnCancel",
   },
 
   ready () {
@@ -117,19 +160,8 @@ var panel ={
       option.text = settings.bundleIdList[i]
       option.value = i
       this.$select.appendChild(option)
-      var csstxt = "<ui-section folded=true readonly=true>"
-      csstxt+='<div class="header">'+settings.bundleIdList[i]+'</div>'
-      csstxt+='<div class="contain">'
-      csstxt+='<br />'
-      for (var j = 0;j<settings.bundleToUuid[i].length;j++){
-        var id = settings.bundleToUuid[i][j]
-        csstxt += "<ui-asset value="+ id+"></ui-asset>"
-        csstxt+='<br />'
-      }
-      csstxt+='</div>'
-      csstxt+= "</ui-section>"
-
-      this.$area.innerHTML += csstxt
+      let sec = new section(settings,i);
+      this.$area.appendChild(sec)
     }
   },
   chosen(){

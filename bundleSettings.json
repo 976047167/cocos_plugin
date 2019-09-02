@@ -1,5 +1,6 @@
 {
     "bundleIdList":[],
     "uuidToBundle":{},
-    "bundleToUuid":[]
+    "bundleToUuid":[],
+    "bundleKeepMark":[]
 }
