@@ -73,10 +73,15 @@ var panel ={
     uuid: <span id="label">--</span>
     <hr />
     <br />
-    <ui-asset id="asset" class="flex-1" type="folder" droppable="asset"></ui-asset>
+    <ui-asset id="asset" type="folder" droppable="asset"></ui-asset>
     <ui-input id="input" placeholder="bundle"></ui-input>
     <ui-button id="btnAdd">set bundle</ui-button>
     <ui-button id="btnDel">delete</ui-button>
+    <br />
+    <ui-asset id="asset2" type="cc.Asset" droppable="asset"></ui-asset>
+    <ui-input id="input2" placeholder="bundle"></ui-input>
+    <ui-button id="btnAdd2">set bundle</ui-button>
+    <ui-button id="btnDel2">delete</ui-button>
     <hr />
     <div id="area" class="mid" > </div>
     <ui-select id="select" value="-1"> </ui-select>
@@ -95,9 +100,13 @@ var panel ={
     label: '#label',
     select:'#select',
     asset:'#asset',
+    asset2:'#asset2',
     input:'#input',
+    input2:'#input2',
     btnAdd:'#btnAdd',
+    btnAdd2:'#btnAdd2',
     btnDel:'#btnDel',
+    btnDel2:'#btnDel2',
     btnExport:'#btnExport',
     area:"#area",
     btnTree:"#btnTree",
@@ -112,7 +121,12 @@ var panel ={
       Editor.Ipc.sendToMain('bundle:showDep',this.$select.value)
     });
     this.$asset.addEventListener('change',()=>{
-      this.chosen()
+      this.$asset2.value =""
+      this.chosen(this.$asset.value)
+    })
+    this.$asset2.addEventListener('change',()=>{
+      this.$asset.value =""
+      this.chosen(this.$asset2.value)
     })
     this.$btnAdd.addEventListener('confirm',()=>{
       if (!this.$input.value) {
@@ -126,7 +140,27 @@ var panel ={
           this.run(argv)
         })
     })
+    this.$btnAdd2.addEventListener('confirm',()=>{
+      if (!this.$input2.value) {
+        return
+      }
+      var msg ={
+          uuid:logic.uuid,
+          bundleId:this.$input2.value
+        }
+        Editor.Ipc.sendToMain("bundle:setBundle",msg,(err,argv)=>{
+          this.run(argv)
+        })
+    })
     this.$btnDel.addEventListener('confirm',()=>{
+      var msg ={
+          uuid:logic.uuid,
+        }
+        Editor.Ipc.sendToMain("bundle:setBundle",msg,(err,argv)=>{
+          this.run(argv)
+        })
+    })
+    this.$btnDel2.addEventListener('confirm',()=>{
       var msg ={
           uuid:logic.uuid,
         }
@@ -164,19 +198,20 @@ var panel ={
       this.$area.appendChild(sec)
     }
   },
-  chosen(){
-      logic.uuid =  this.$asset.value
+  chosen(uuid){
+      logic.uuid = uuid
       this.$label.innerText = logic.uuid
       var bundleId = logic.settings.uuidToBundle[logic.uuid]
       if(bundleId !== undefined){
         this.$input.value = logic.settings.bundleIdList[bundleId]
+        this.$input2.value = logic.settings.bundleIdList[bundleId]
       }
 
   },
   messages: {
     'chosen' :(_,uuid)=> {
       myself.$asset.value =uuid
-      myself.chosen()
+      myself.chosen(uuid)
     },
   },
 }
