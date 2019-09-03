@@ -1,88 +1,37 @@
-const { encode } = require("./libs/encode");
+const { getrees,getDepList } = require("./libs/query-depends");
 const { copyFile } = require("./libs/build-copy");
 var fs = require('fs')
 var path_module = require('path')
-var crypto = require("crypto");
 var SETTINGS_EXAMPLE_PATH = "packages://bundle/bundleSettings.json"
 var SETTINGS_PATH = Editor.Project.path + "/bundleSettings.json"
-var uuidMap = {}
-var rawMap = {}
-var settings
+var settings={
+  "bundleIdList":[],
+  "uuidToBundle":{},
+  "bundleToUuid":[],
+  "bundleKeepMark":[]
+}
 function getDep(bundleId) {
-  uuidMap = {}
-  rawMap = {}
   if (!settings.bundleToUuid || !settings.bundleToUuid[bundleId]) {
     return
   }
-  settings.bundleToUuid[bundleId].forEach(uuid => {
-    queryDepList(uuid)
-  });
-  Editor.log(uuidMap)
-  Editor.log(rawMap)
+  var result = getDepList(settings.bundleToUuid[bundleId])
+  Editor.log(result.uuidMap)
+  Editor.log(result.rawMap)
 
 }
 function getRootList(bundleId) {
   if (!settings.bundleToUuid || !settings.bundleToUuid[bundleId]) {
     return
   }
-  var result = []
-  settings.bundleToUuid[bundleId].forEach(uuid => {
-    var rootNode = buildTree(uuid)
-    result.push(rootNode)
-  });
+  var result = getrees(settings.bundleToUuid[bundleId])
   return result
-}
-function queryDepList(uuid, parent) {
-  var fspath = Editor.assetdb.uuidToFspath(uuid)
-  var path = Editor.assetdb.uuidToUrl(uuid)
-  var info = Editor.assetdb.assetInfoByUuid(uuid)
-  var type = info.type
-  uuidMap[uuid] = path
-  if (type === 'sprite-atlas' || type === 'sprite-frame') {
-    uuid = Editor.assetdb.loadMetaByUuid(uuid).rawTextureUuid
-    rawMap[uuid] = Editor.assetdb.uuidToUrl(uuid)
-    uuidMap[uuid] = Editor.assetdb.uuidToUrl(uuid)
-    return
-  }
-  if (type === 'bitmap-font') {
-    uuid = Editor.assetdb.loadMetaByUuid(uuid).textureUuid
-    rawMap[uuid] = Editor.assetdb.uuidToUrl(uuid)
-    uuidMap[uuid] = Editor.assetdb.uuidToUrl(uuid)
-    return
-  }
-  if (type === 'effect') {
-    return
-  }
-  if (type !== 'prefab' && type !== 'material' && type !== 'animation-clip') {
-    rawMap[uuid] = path
-    return
-  }
-  function queryJson(obj) {
-    for (const key in obj) {
-      if (obj.hasOwnProperty(key)) {
-        const element = obj[key];
-        // Editor.log(typeof(element))
-        if (typeof (element) === 'object') {
-          queryJson(element)
-        }
-        else if (key === '__uuid__') {
-          if (!uuidMap[element]) {
-            queryDepList(element)
-          }
-
-        }
-      }
-    }
-  }
-  var jsonString = fs.readFileSync(fspath)
-  var jsonObj = JSON.parse(jsonString)
-  queryJson(jsonObj)
 }
 function loadSettings() {
   var url = SETTINGS_PATH
   var isexists = fs.existsSync(url)
   if (!isexists) {
-    fs.writeFileSync(url, fs.readFileSync(Editor.url(SETTINGS_EXAMPLE_PATH)))
+    fs.writeFileSync(url, settings)
+    return
   }
   var jsonString = fs.readFileSync(url)
   var json = JSON.parse(jsonString)
@@ -172,88 +121,28 @@ function exportSettings(url) {
 }
 
 
-function buildTree(uuid, parent) {
-  var fspath = Editor.assetdb.uuidToFspath(uuid)
-  if (!fspath) {
-    Editor.warn(uuid)
-    Editor.warn(parent || parent.path)
-    return
-  }
-  var path = Editor.assetdb.uuidToUrl(uuid)
-  var info = Editor.assetdb.assetInfoByUuid(uuid)
-  var type = info.type
-  var encodeId = encode(uuid.split("-").join(""))
-  var treeNode = {
-    uuid: uuid,
-    path: path,
-    children: [],
-    type: type,
-    md5: "",
-    encodeId: encodeId
-  }
-
-  if (type === 'sprite-frame') {
-    uuid = Editor.assetdb.loadMetaByUuid(uuid).rawTextureUuid
-    treeNode.uuid = uuid
-    treeNode.path = Editor.assetdb.uuidToUrl(uuid)
-    fspath = Editor.assetdb.uuidToFspath(uuid)
-  }
-  if (type === 'bitmap-font') {
-    uuid = Editor.assetdb.loadMetaByUuid(uuid).textureUuid
-    treeNode.uuid = uuid
-    treeNode.path = Editor.assetdb.uuidToUrl(uuid)
-    fspath = Editor.assetdb.uuidToFspath(uuid)
-  }
-  var jsonString = fs.readFileSync(fspath)
-  treeNode.md5 = crypto.createHash("md5").update(jsonString || "", "latin1").digest("hex").slice(0, 5);
-
-  if (type !== 'prefab' && type !== 'material' && type !== 'animation-clip') {
-    return treeNode
-  }
-
-  function queryTreeJson(obj) {
-    for (const key in obj) {
-      if (obj.hasOwnProperty(key)) {
-        const element = obj[key];
-        // Editor.log(typeof(element))
-        if (typeof (element) === 'object') {
-          queryTreeJson(element)
-        }
-        else if (key === '__uuid__') {
-          if (element !== uuid) {
-            var child = buildTree(element, treeNode)
-            if (child) treeNode.children.push(child)
-          }
-        }
-      }
-    }
-  }
-  var jsonObj = JSON.parse(jsonString)
-  queryTreeJson(jsonObj)
-  return treeNode
-}
 function test() {
   // var info = Editor.assetdb.assetInfoByUuid("842b09e6-8c5f-4a15-a001-c34c88e7faa2")
   // Editor.log(info)
 }
 function keepFile(options, callback) {
-  uuidMap = {}
-  rawMap = {}
   if (!settings.bundleToUuid ||
      !settings.bundleKeepMark) {
     return
   }
+  var uuidlist=[]
   for (const key in settings.bundleKeepMark) {
     if (settings.bundleKeepMark.hasOwnProperty(key)) {
       const f = !!settings.bundleKeepMark[key];
       if(f){
         settings.bundleToUuid[key].forEach(uuid => {
-          queryDepList(uuid)
+          uuidlist.push(uuid)
         });
       }
 
     }
   }
+  var rawMap= getDepList(uuidlist).rawMap
   copyFile(options.dest,Object.keys(rawMap),callback)
 
 
