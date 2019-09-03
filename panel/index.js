@@ -31,7 +31,7 @@ var section = Editor.UI.registerElement('seting-section', {
     this.$checkbox.checked = !!settings.bundleKeepMark[i]
     this.$title.innerHTML=settings.bundleIdList[i]+this.$title.innerHTML
     let csstxt =""
-    for (var j = 0;j<settings.bundleToUuid[i].length;j++){
+    for (var j = 0;j<settings.bundleAsset[i].length;j++){
       var id = settings.bundleToUuid[i][j]
       csstxt+= "<ui-asset value="+ id+"></ui-asset><br />"
     }
@@ -85,7 +85,7 @@ var panel ={
     <ui-button id="btnAnalyse">analyse</ui-button>
     <hr />
     <div id="area" class="mid" > </div>
-    <ui-select id="select" value="-1"> </ui-select>
+    <ui-select id="select" value="0"> </ui-select>
     <ui-button id="btn">show depends</ui-button>
     <ui-button id="btnTree">show tree</ui-button>
     <hr />
@@ -213,12 +213,6 @@ var panel ={
   chosen(uuid){
       logic.uuid = uuid
       this.$label.innerText = logic.uuid
-      var bundleId = logic.settings.uuidToBundle[logic.uuid]
-      if(bundleId !== undefined){
-        this.$input.value = logic.settings.bundleIdList[bundleId]
-        this.$input2.value = logic.settings.bundleIdList[bundleId]
-      }
-
   },
   messages: {
     'chosen' :(_,uuid)=> {

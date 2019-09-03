@@ -2,40 +2,82 @@ const { getrees,getDepList } = require("./libs/query-depends");
 const { copyFile } = require("./libs/build-copy");
 var fs = require('fs')
 var path_module = require('path')
-var SETTINGS_EXAMPLE_PATH = "packages://bundle/bundleSettings.json"
 var SETTINGS_PATH = Editor.Project.path + "/bundleSettings.json"
 var settings={
   "bundleIdList":[],
-  "uuidToBundle":{},
-  "bundleToUuid":[],
+  // "uuidToBundle":{},
+  // "bundleToUuid":[],
+  "bundleAsset":[],
   "bundleKeepMark":[]
 }
+var bundleInfo={}
 function getDep(bundleId) {
-  if (!settings.bundleToUuid || !settings.bundleToUuid[bundleId]) {
+  if (!bundleInfo.bundleToUuid || !bundleInfo.bundleToUuid[bundleId]) {
     return
   }
-  var result = getDepList(settings.bundleToUuid[bundleId])
+  var result = getDepList(bundleInfo.bundleToUuid[bundleId])
   Editor.log(result.uuidMap)
   Editor.log(result.rawMap)
 
 }
 function getRootList(bundleId) {
-  if (!settings.bundleToUuid || !settings.bundleToUuid[bundleId]) {
+  if (!bundleInfo.bundleToUuid || !bundleInfo.bundleToUuid[bundleId]) {
     return
   }
-  var result = getrees(settings.bundleToUuid[bundleId])
+  var result = getrees(bundleInfo.bundleToUuid[bundleId])
   return result
 }
 function loadSettings() {
   var url = SETTINGS_PATH
   var isexists = fs.existsSync(url)
   if (!isexists) {
-    fs.writeFileSync(url, settings)
-    return
+    fs.writeFileSync(url, bundleInfo)
+
+  }else{
+    var jsonString = fs.readFileSync(url)
+    var json = JSON.parse(jsonString)
+    settings = json
+
   }
-  var jsonString = fs.readFileSync(url)
-  var json = JSON.parse(jsonString)
-  settings = json
+  loadBundleInfo()
+}
+function loadBundleInfo(){
+  bundleInfo.bundleIdList = settings.bundleIdList
+  bundleInfo.bundleKeepMark = settings.bundleKeepMark
+  bundleInfo.uuidToBundle ={}
+  bundleInfo.bundleToUuid =[]
+
+  function parseInfo(idx,uuid) {
+    if (!bundleInfo.bundleToUuid[idx]) {
+      bundleInfo.bundleToUuid[idx] = []
+    }
+    bundleInfo.bundleToUuid[idx].push(uuid)
+    bundleInfo.uuidToBundle[uuid] = idx
+  }
+
+  for (var j = 0;j<settings.bundleAsset[i].length;j++){
+    var uuid = settings.bundleToUuid[i][j]
+    var info = Editor.assetdb.assetInfoByUuid(uuid)
+    if (info.type === "folder"){
+      var filelist = fs.readdirSync(info.path)
+      filelist.forEach(f=>{
+        var subPath = path_module.join(info.path, f)
+        var subUuid = Editor.assetdb.fspathToUuid(subPath)
+        if (!subUuid) return
+        var subInfo = Editor.assetdb.assetInfoByUuid(uuid)
+        if (subInfo.type === "folder"){
+          return
+        }
+        parseInfo(i,subUuid)
+      })
+    }else{
+      parseInfo(i,uuid)
+    }
+  }
+
+  // "uuidToBundle":{},
+  // "bundleToUuid":[],
+
 }
 function saveSettings() {
   var url = SETTINGS_PATH
@@ -43,68 +85,32 @@ function saveSettings() {
 }
 
 function setBundle(arg) {
-  var info = Editor.assetdb.assetInfoByUuid(arg.uuid)
-  if (info.type === "folder") {
-    var filelist = fs.readdirSync(info.path)
-    filelist.forEach((f => {
-      var newArg = {}
-      newArg.bundleId = arg.bundleId
-      var newPath = path_module.join(info.path, f)
-      var newUUid = Editor.assetdb.fspathToUuid(newPath)
-      if (!newUUid) return
-      newArg.uuid = newUUid
-      setBundle(newArg)
-    }))
-    return
-  }
-  var orginBundleIdx = undefined
-  function deleteBundle() {
-    settings.bundleToUuid[orginBundleIdx] = settings.bundleToUuid[orginBundleIdx].filter((b) => {
-      return b !== arg.uuid
-    })
-    if (settings.bundleToUuid[orginBundleIdx].length === 0) {
-      settings.bundleToUuid.splice(orginBundleIdx, 1)
-      settings.bundleIdList.splice(orginBundleIdx, 1)
-    }
-    delete settings.uuidToBundle[arg.uuid]
-  }
-  function addBundle() {
-    if (arg.bundleId === null || arg.bundleId === undefined) {
-      return
-    }
-    var idx = settings.bundleIdList.indexOf(arg.bundleId)
-    if (idx === -1) {
-      settings.bundleIdList.push(arg.bundleId)
-      idx = settings.bundleIdList.length - 1
-    }
-    if (!settings.bundleToUuid[idx]) {
-      settings.bundleToUuid[idx] = []
-    }
-    settings.bundleToUuid[idx].push(arg.uuid)
-    settings.uuidToBundle[arg.uuid] = idx
-
-  }
 
 
-  if (!arg || !arg.uuid) return
-  orginBundleIdx = settings.uuidToBundle[arg.uuid]
-  if (!arg.bundleId && orginBundleIdx !== undefined) {
-    deleteBundle()
-    return
+  if(!arg.bundleId&&arg.bundleId!==0){
+    // deleteBundleInfo()
+  }else{
+
   }
-  if (orginBundleIdx == undefined) {
-    addBundle()
-    return
+  var idx = settings.bundleIdList.indexOf(arg.bundleId)
+  if(idx === -1){
+    settings.bundleIdList.push(arg.bundleId)
+    idx = settings.bundleIdList.length -1
   }
-  deleteBundle()
-  addBundle()
+  if(!settings.bundleAsset[idx]){
+    settings.bundleAsset[idx]=[]
+  }
+  if(settings.bundleAsset[idx].indexOf(arg.uuid)=-1){
+    settings.bundleAsset[idx].push(arg.uuid)
+  }
+
 }
 function exportSettings(url) {
-  var l = settings.bundleToUuid.length
+  var l = bundleInfo.bundleToUuid.length
   var data = {}
   for (var i = 0; i < l; i++) {
     var rootList = getRootList(i)
-    data[settings.bundleIdList[i]] = rootList
+    data[bundleInfo.bundleIdList[i]] = rootList
   }
   if (!url) {
     url = "db://assets/resources/t_bundle.json"
@@ -126,16 +132,16 @@ function test() {
   // Editor.log(info)
 }
 function keepFile(options, callback) {
-  if (!settings.bundleToUuid ||
-     !settings.bundleKeepMark) {
+  if (!bundleInfo.bundleToUuid ||
+     !bundleInfo.bundleKeepMark) {
     return
   }
   var uuidlist=[]
-  for (const key in settings.bundleKeepMark) {
-    if (settings.bundleKeepMark.hasOwnProperty(key)) {
-      const f = !!settings.bundleKeepMark[key];
+  for (const key in bundleInfo.bundleKeepMark) {
+    if (bundleInfo.bundleKeepMark.hasOwnProperty(key)) {
+      const f = !!bundleInfo.bundleKeepMark[key];
       if(f){
-        settings.bundleToUuid[key].forEach(uuid => {
+        bundleInfo.bundleToUuid[key].forEach(uuid => {
           uuidlist.push(uuid)
         });
       }
@@ -190,15 +196,15 @@ module.exports = {
       event.reply(null, s)
     },
     'keep'(_, arg) {
-      settings.bundleKeepMark[arg.bundleId] = arg.keep
+      bundleInfo.bundleKeepMark[arg.bundleId] = arg.keep
     },
     'clear'(event,arg){
       settings={
         "bundleIdList":[],
-        "uuidToBundle":{},
-        "bundleToUuid":[],
+        "bundleAsset":[],
         "bundleKeepMark":[]
       }
+      loadBundleInfo()
       var s = JSON.stringify(settings)
       event.reply(null, s)
     },
@@ -208,14 +214,14 @@ module.exports = {
         if(node.children.length === 0) return
         node.children.forEach(child=>{
           if(child.uuid === uuid){
-            result[node.path] =settings.bundleIdList[settings.uuidToBundle[node.uuid]]
+            result[node.path] =bundleInfo.bundleIdList[bundleInfo.uuidToBundle[node.uuid]]
             return
           }
           queryChildren(child,uuid)
         })
 
       }
-      var l = settings.bundleToUuid.length
+      var l = bundleInfo.bundleToUuid.length
       for (var i = 0; i < l; i++) {
         var list = getRootList(i)
         list.forEach((node)=>{
