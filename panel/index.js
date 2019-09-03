@@ -82,6 +82,7 @@ var panel ={
     <ui-input id="input2" placeholder="bundle"></ui-input>
     <ui-button id="btnAdd2">set bundle</ui-button>
     <ui-button id="btnDel2">delete</ui-button>
+    <ui-button id="btnAnalyse">analyse</ui-button>
     <hr />
     <div id="area" class="mid" > </div>
     <ui-select id="select" value="-1"> </ui-select>
@@ -93,6 +94,7 @@ var panel ={
     <hr />
     <ui-button id="btnSave">save</ui-button>
     <ui-button id="btnCancel">cancel</ui-button>
+    <ui-button id="btnClear">clear</ui-button>
   `,
 
   $: {
@@ -112,7 +114,9 @@ var panel ={
     btnTree:"#btnTree",
     input2:"#input2",
     btnSave:"#btnSave",
+    btnClear:"#btnClear",
     btnCancel:"#btnCancel",
+    btnAnalyse:"#btnAnalyse"
   },
 
   ready () {
@@ -177,10 +181,18 @@ var panel ={
     this.$btnSave.addEventListener('confirm',()=>{
         Editor.Ipc.sendToMain('bundle:save')
     })
-    this.$btnCancel.addEventListener('confirm',null,()=>{
+    this.$btnClear.addEventListener('confirm',()=>{
+        Editor.Ipc.sendToMain('bundle:clear',(err,argv)=>{
+          this.run(argv)
+        })
+    })
+    this.$btnCancel.addEventListener('confirm',()=>{
         Editor.Ipc.sendToMain('bundle:cancel',(err,argv)=>{
           this.run(argv)
         })
+    })
+    this.$btnAnalyse.addEventListener('confirm',()=>{
+        Editor.Ipc.sendToMain("bundle:analyse",this.$asset2.value)
     })
   },
   run(argv){

@@ -21,14 +21,14 @@ function getDep(bundleId) {
   Editor.log(rawMap)
 
 }
-function getTree(bundleId) {
+function getRootList(bundleId) {
   if (!settings.bundleToUuid || !settings.bundleToUuid[bundleId]) {
     return
   }
   var result = []
   settings.bundleToUuid[bundleId].forEach(uuid => {
-    var tree = buildTree(uuid)
-    result.push(tree)
+    var rootNode = buildTree(uuid)
+    result.push(rootNode)
   });
   return result
 }
@@ -154,8 +154,8 @@ function exportSettings(url) {
   var l = settings.bundleToUuid.length
   var data = {}
   for (var i = 0; i < l; i++) {
-    var node = getTree(i)
-    data[settings.bundleIdList[i]] = node
+    var rootList = getRootList(i)
+    data[settings.bundleIdList[i]] = rootList
   }
   if (!url) {
     url = "db://assets/resources/t_bundle.json"
@@ -176,7 +176,7 @@ function buildTree(uuid, parent) {
   var fspath = Editor.assetdb.uuidToFspath(uuid)
   if (!fspath) {
     Editor.warn(uuid)
-    Editor.warn(parent.path)
+    Editor.warn(parent || parent.path)
     return
   }
   var path = Editor.assetdb.uuidToUrl(uuid)
@@ -274,7 +274,8 @@ module.exports = {
       getDep(bundleId);
     },
     'showTree'(_, bundleId) {
-      getTree(bundleId)
+      var result = getRootList(bundleId)
+      Editor.log(result)
     },
     'open'() {
       test()
@@ -301,7 +302,39 @@ module.exports = {
     },
     'keep'(_, arg) {
       settings.bundleKeepMark[arg.bundleId] = arg.keep
-    }
+    },
+    'clear'(event,arg){
+      settings={
+        "bundleIdList":[],
+        "uuidToBundle":{},
+        "bundleToUuid":[],
+        "bundleKeepMark":[]
+      }
+      var s = JSON.stringify(settings)
+      event.reply(null, s)
+    },
+    'analyse'(_, uuid) {
+      var result = {}
+      function queryChildren(node,uuid){
+        if(node.children.length === 0) return
+        node.children.forEach(child=>{
+          if(child.uuid === uuid){
+            result[node.path] =settings.bundleIdList[settings.uuidToBundle[node.uuid]]
+            return
+          }
+          queryChildren(child,uuid)
+        })
+
+      }
+      var l = settings.bundleToUuid.length
+      for (var i = 0; i < l; i++) {
+        var list = getRootList(i)
+        list.forEach((node)=>{
+          queryChildren(node,uuid)
+        })
+      }
+      Editor.log(result)
+    },
 
   },
 };
