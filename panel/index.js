@@ -32,7 +32,7 @@ var section = Editor.UI.registerElement('seting-section', {
     this.$title.innerHTML=settings.bundleIdList[i]+this.$title.innerHTML
     let csstxt =""
     for (var j = 0;j<settings.bundleAsset[i].length;j++){
-      var id = settings.bundleToUuid[i][j]
+      var id = settings.bundleAsset[i][j]
       csstxt+= "<ui-asset value="+ id+"></ui-asset><br />"
     }
     this.$list.innerHTML+=csstxt

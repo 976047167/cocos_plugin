@@ -5,8 +5,6 @@ var path_module = require('path')
 var SETTINGS_PATH = Editor.Project.path + "/bundleSettings.json"
 var settings={
   "bundleIdList":[],
-  // "uuidToBundle":{},
-  // "bundleToUuid":[],
   "bundleAsset":[],
   "bundleKeepMark":[]
 }
@@ -31,7 +29,7 @@ function loadSettings() {
   var url = SETTINGS_PATH
   var isexists = fs.existsSync(url)
   if (!isexists) {
-    fs.writeFileSync(url, bundleInfo)
+    fs.writeFileSync(url, JSON.stringify(settings))
 
   }else{
     var jsonString = fs.readFileSync(url)
@@ -75,8 +73,6 @@ function loadBundleInfo(){
     }
   }
 
-  // "uuidToBundle":{},
-  // "bundleToUuid":[],
 
 }
 function saveSettings() {
@@ -85,12 +81,12 @@ function saveSettings() {
 }
 
 function setBundle(arg) {
-
+  settings.bundleAsset.map(bundle=>{
+    return bundle.filter(uuid=>{uuid !== arg.uuid })
+  })
 
   if(!arg.bundleId&&arg.bundleId!==0){
-    // deleteBundleInfo()
-  }else{
-
+    return
   }
   var idx = settings.bundleIdList.indexOf(arg.bundleId)
   if(idx === -1){
@@ -100,9 +96,7 @@ function setBundle(arg) {
   if(!settings.bundleAsset[idx]){
     settings.bundleAsset[idx]=[]
   }
-  if(settings.bundleAsset[idx].indexOf(arg.uuid)=-1){
-    settings.bundleAsset[idx].push(arg.uuid)
-  }
+  settings.bundleAsset[idx].push(arg.uuid)
 
 }
 function exportSettings(url) {
@@ -181,6 +175,7 @@ module.exports = {
     },
     'setBundle'(event, arg) {
       setBundle(arg)
+      loadBundleInfo()
       var s = JSON.stringify(settings)
       event.reply(null, s)
     },
