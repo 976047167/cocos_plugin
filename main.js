@@ -53,26 +53,27 @@ function loadBundleInfo(){
     bundleInfo.uuidToBundle[uuid] = idx
   }
 
-  for (var j = 0;j<settings.bundleAsset[i].length;j++){
-    var uuid = settings.bundleToUuid[i][j]
-    var info = Editor.assetdb.assetInfoByUuid(uuid)
-    if (info.type === "folder"){
-      var filelist = fs.readdirSync(info.path)
-      filelist.forEach(f=>{
-        var subPath = path_module.join(info.path, f)
-        var subUuid = Editor.assetdb.fspathToUuid(subPath)
-        if (!subUuid) return
-        var subInfo = Editor.assetdb.assetInfoByUuid(uuid)
-        if (subInfo.type === "folder"){
-          return
-        }
-        parseInfo(i,subUuid)
-      })
-    }else{
-      parseInfo(i,uuid)
+  for (var i =0 ;i<settings.bundleIdList.length;i++){
+    for (var j = 0;j<settings.bundleAsset[i].length;j++){
+      var uuid = settings.bundleAsset[i][j]
+      var info = Editor.assetdb.assetInfoByUuid(uuid)
+      if (info.type === "folder"){
+        var filelist = fs.readdirSync(info.path)
+        filelist.forEach(f=>{
+          var subPath = path_module.join(info.path, f)
+          var subUuid = Editor.assetdb.fspathToUuid(subPath)
+          if (!subUuid) return
+          var subInfo = Editor.assetdb.assetInfoByUuid(uuid)
+          if (subInfo.type === "folder"){
+            return
+          }
+          parseInfo(i,subUuid)
+        })
+      }else{
+        parseInfo(i,uuid)
+      }
     }
   }
-
 
 }
 function saveSettings() {
@@ -81,11 +82,17 @@ function saveSettings() {
 }
 
 function setBundle(arg) {
-  settings.bundleAsset.map(bundle=>{
+  settings.bundleAsset = settings.bundleAsset.map(bundle=>{
     return bundle.filter(uuid=>{uuid !== arg.uuid })
+  }).filter((bundle,idx)=>{
+    settings.bundleIdList[idx] = false
+    bundle.length !==0
   })
-
-  if(!arg.bundleId&&arg.bundleId!==0){
+  settings.bundleIdList = settings.bundleIdList.filter(id=>{
+    return !!id
+    }
+  )
+  if(!arg.bundleId && arg.bundleId!==0){
     return
   }
   var idx = settings.bundleIdList.indexOf(arg.bundleId)
@@ -97,7 +104,7 @@ function setBundle(arg) {
     settings.bundleAsset[idx]=[]
   }
   settings.bundleAsset[idx].push(arg.uuid)
-
+  loadBundleInfo()
 }
 function exportSettings(url) {
   var l = bundleInfo.bundleToUuid.length
@@ -122,8 +129,6 @@ function exportSettings(url) {
 
 
 function test() {
-  // var info = Editor.assetdb.assetInfoByUuid("842b09e6-8c5f-4a15-a001-c34c88e7faa2")
-  // Editor.log(info)
 }
 function keepFile(options, callback) {
   if (!bundleInfo.bundleToUuid ||
@@ -175,7 +180,6 @@ module.exports = {
     },
     'setBundle'(event, arg) {
       setBundle(arg)
-      loadBundleInfo()
       var s = JSON.stringify(settings)
       event.reply(null, s)
     },
