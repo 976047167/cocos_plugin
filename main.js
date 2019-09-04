@@ -63,7 +63,7 @@ function loadBundleInfo(){
           var subPath = path_module.join(info.path, f)
           var subUuid = Editor.assetdb.fspathToUuid(subPath)
           if (!subUuid) return
-          var subInfo = Editor.assetdb.assetInfoByUuid(uuid)
+          var subInfo = Editor.assetdb.assetInfoByUuid(subUuid)
           if (subInfo.type === "folder"){
             return
           }
@@ -83,10 +83,11 @@ function saveSettings() {
 
 function setBundle(arg) {
   settings.bundleAsset = settings.bundleAsset.map(bundle=>{
-    return bundle.filter(uuid=>{uuid !== arg.uuid })
-  }).filter((bundle,idx)=>{
+    return bundle.filter(uuid=>{return uuid !== arg.uuid })
+  }).filter((bundle1,idx)=>{
+    if(bundle1.length !==0)return true
     settings.bundleIdList[idx] = false
-    bundle.length !==0
+    return false
   })
   settings.bundleIdList = settings.bundleIdList.filter(id=>{
     return !!id

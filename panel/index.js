@@ -1,4 +1,5 @@
 // panel/index.js
+var myself = null
 var section = Editor.UI.registerElement('seting-section', {
   bundleId:0,
   style:`
@@ -30,12 +31,24 @@ var section = Editor.UI.registerElement('seting-section', {
     this.bundleId =i
     this.$checkbox.checked = !!settings.bundleKeepMark[i]
     this.$title.innerHTML=settings.bundleIdList[i]+this.$title.innerHTML
-    let csstxt =""
     for (var j = 0;j<settings.bundleAsset[i].length;j++){
       var id = settings.bundleAsset[i][j]
-      csstxt+= "<ui-asset value="+ id+"></ui-asset><br />"
+      var asset = document.createElement("ui-asset")
+      asset.value = id
+      asset.uuidValue = id
+      this.$list.appendChild(asset)
+      asset.addEventListener("change",()=>{
+          Editor.Ipc.sendToMain("bundle:setBundle",{uuid:asset.uuidValue},(err,argv)=>{
+            if(!asset.value){
+              myself.run(argv)
+              return
+            }
+            Editor.Ipc.sendToMain("bundle:setBundle",{uuid:asset.value,bundleId:settings.bundleIdList[i]},(err,argv)=>{
+              myself.run(argv)
+            })
+          })
+      })
     }
-    this.$list.innerHTML+=csstxt
   },
   ready(){
       this.$checkbox.addEventListener('change',()=>{
@@ -53,7 +66,6 @@ var logic={
   settings:null,
  }
 
- var myself = null
 
 
 var panel ={
