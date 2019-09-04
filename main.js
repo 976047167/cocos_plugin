@@ -110,7 +110,9 @@ function setBundle(arg) {
 function exportSettings(url) {
   var l = bundleInfo.bundleToUuid.length
   var data = {}
+  Editor.log("Exporting bundles start")
   for (var i = 0; i < l; i++) {
+    Editor.log("Exporting bundle"+bundleInfo.bundleIdList[i])
     var rootList = getRootList(i)
     data[bundleInfo.bundleIdList[i]] = rootList
   }
@@ -126,6 +128,7 @@ function exportSettings(url) {
   } else {
     Editor.assetdb.create(url, JSON.stringify(data))
   }
+  Editor.log("Exporting bundles finished")
 }
 
 
@@ -153,14 +156,21 @@ function keepFile(options, callback) {
 
 
 }
+function exportOnBuild(options,callback){
+  exportSettings()
+  callback()
+}
 
 module.exports = {
   load() {
+    Editor.Builder.on('build-start', exportOnBuild);
+    test()
     Editor.Builder.on('build-finished', keepFile);
     loadSettings()
   },
 
   unload() {
+    Editor.Builder.removeListener('build-start', exportOnBuild);
     Editor.Builder.removeListener('build-finished', keepFile);
   },
 
