@@ -135,6 +135,7 @@ function exportSettings(url) {
 function test() {
 }
 function keepFile(options, callback) {
+  loadSettings()
   if (!bundleInfo.bundleToUuid ||
      !bundleInfo.bundleKeepMark) {
     return
@@ -157,16 +158,17 @@ function keepFile(options, callback) {
 
 }
 function exportOnBuild(options,callback){
-  exportSettings()
+  if(options.exportBundle){
+    loadSettings()
+    exportSettings()
+  }
   callback()
 }
 
 module.exports = {
   load() {
     Editor.Builder.on('build-start', exportOnBuild);
-    test()
     Editor.Builder.on('build-finished', keepFile);
-    loadSettings()
   },
 
   unload() {
@@ -184,6 +186,7 @@ module.exports = {
     },
     'open'() {
       test()
+      loadSettings()
       Editor.Panel.open('bundle', JSON.stringify(settings));
     },
     'scene:enter-prefab-edit-mode'(event, arg) {
