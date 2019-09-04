@@ -107,7 +107,7 @@ var panel ={
     <ui-button id="btnExport">export</ui-button>
     <hr />
     <ui-button id="btnSave">save</ui-button>
-    <ui-button id="btnCancel">cancel</ui-button>
+    <ui-button id="btnCancel">load</ui-button>
     <ui-button id="btnClear">clear</ui-button>
   `,
 
