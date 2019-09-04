@@ -33,16 +33,18 @@ var section = Editor.UI.registerElement('seting-section', {
     this.$title.innerHTML=settings.bundleIdList[i]+this.$title.innerHTML
     for (var j = 0;j<settings.bundleAsset[i].length;j++){
       var id = settings.bundleAsset[i][j]
-      var asset = document.createElement("ui-asset")
+      const asset = document.createElement("ui-asset")
       asset.value = id
       asset.uuidValue = id
       this.$list.appendChild(asset)
+      this.$list.appendChild(document.createElement("br"))
       asset.addEventListener("change",()=>{
           Editor.Ipc.sendToMain("bundle:setBundle",{uuid:asset.uuidValue},(err,argv)=>{
             if(!asset.value){
               myself.run(argv)
               return
             }
+            asset.uuidValue = asset.value
             Editor.Ipc.sendToMain("bundle:setBundle",{uuid:asset.value,bundleId:settings.bundleIdList[i]},(err,argv)=>{
               myself.run(argv)
             })
