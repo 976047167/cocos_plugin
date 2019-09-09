@@ -23,7 +23,7 @@ function buildTree(uuid, parent) {
         type: type,
         encodeId: encodeId
     };
-    if (type === 'sprite-frame' || type === 'sprite-atlas') {
+    if (type === 'sprite-frame' ) {
         uuid = Editor.assetdb.loadMetaByUuid(uuid).rawTextureUuid;
         treeNode = buildTree(uuid,parent)
     }
