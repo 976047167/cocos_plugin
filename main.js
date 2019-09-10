@@ -158,10 +158,8 @@ function keepFile(options, callback) {
 
 }
 function exportOnBuild(options,callback){
-  if(options.exportBundle){
-    loadSettings()
-    exportSettings()
-  }
+  loadSettings()
+  exportSettings()
   callback()
 }
 
