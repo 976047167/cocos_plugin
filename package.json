@@ -1,19 +1,22 @@
 {
-    "name": "bundle",
-    "version": "0.0.1",
+  "name": "bundle",
+  "version": "0.0.1",
   "description": "",
-    "author": "Damian",
-    "main": "main.js",
-    "main-menu": {
-      "bundle/开启": {
-        "message": "bundle:open"
-      }
-    },
-    "panel": {
+  "author": "Damian",
+  "main": "main.js",
+  "main-menu": {
+    "bundle/开启": {
+      "message": "bundle:open"
+    }
+  },
+  "panel": {
     "main": "panel/index.js",
     "type": "dockable",
     "title": "Asset Bundle",
     "width": 800,
     "height": 600
-    }
+  },
+  "dependencies": {
+    "plist": "^3.0.1"
+  }
 }

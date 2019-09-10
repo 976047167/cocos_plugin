@@ -1,5 +1,6 @@
 const { encode } = require("./encode");
 var fs = require('fs');
+var plist =require('plist')
 var uuidMap = {};
 var rawMap = {};
 function buildTree(uuid, parent) {
@@ -24,12 +25,27 @@ function buildTree(uuid, parent) {
         encodeId: encodeId
     };
     if (type === 'sprite-frame' ) {
-        uuid = Editor.assetdb.loadMetaByUuid(uuid).rawTextureUuid;
-        treeNode = buildTree(uuid,parent)
+        const index = path.lastIndexOf("/");
+        const suffix =path.substr(0,index);
+        uuid = Editor.assetdb.urlToUuid(suffix)
+        if(uuid){
+            treeNode = buildTree(uuid,parent)
+        }
     }
     if (type === 'bitmap-font') {
         uuid = Editor.assetdb.loadMetaByUuid(uuid).textureUuid;
         treeNode = buildTree(uuid,parent)
+    }
+    if(type === 'sprite-atlas'){
+        const fspath = Editor.assetdb.uuidToFspath(uuid)
+        var jsonString = fs.readFileSync(fspath,"utf8");
+        var xmlParser = plist.parse(jsonString)
+        const rawName = xmlParser.metadata.textureFileName
+        const index = path.lastIndexOf("/");
+        const suffix =path.substr(0,index+1);
+        const rawPath =suffix + rawName
+        const  rawUuid = Editor.assetdb.urlToUuid(rawPath)
+        treeNode.children.push(buildTree(rawUuid))
     }
 
     uuidMap[uuid] = treeNode;
@@ -43,13 +59,13 @@ function buildTree(uuid, parent) {
 
 
 
-    function queryTreeJson(obj) {
+    function queryTreeObject(obj) {
         for (const key in obj) {
         if (obj.hasOwnProperty(key)) {
             const element = obj[key];
             // Editor.log(typeof(element))
             if (typeof (element) === 'object') {
-            queryTreeJson(element);
+            queryTreeObject(element);
             }
             else if (key === '__uuid__') {
             if (element !== uuid) {
@@ -63,7 +79,7 @@ function buildTree(uuid, parent) {
     }
     var jsonString = fs.readFileSync(fspath);
     var jsonObj = JSON.parse(jsonString);
-    queryTreeJson(jsonObj);
+    queryTreeObject(jsonObj);
     return treeNode;
 }
 function getrees(list){
