@@ -2,7 +2,7 @@ const { getrees,getDepList } = require("./libs/query-depends");
 const { copyFile } = require("./libs/build-copy");
 var fs = require('fs')
 var path_module = require('path')
-var SETTINGS_PATH = Editor.Project.path + "/bundleSettings.json"
+var SETTINGS_PATH = Editor.Project.path + "/config/bundleSettings.json"
 var settings={
   "bundleIdList":[],
   "bundleAsset":[],
