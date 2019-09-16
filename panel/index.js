@@ -103,7 +103,7 @@ var panel ={
     <ui-button id="btn">show depends</ui-button>
     <ui-button id="btnTree">show tree</ui-button>
     <hr />
-    <ui-input id="input2" placeholder="resources/table/"></ui-input>
+    <ui-input id="input3" placeholder="resources/table/"></ui-input>
     <ui-button id="btnExport">export</ui-button>
     <hr />
     <ui-button id="btnSave">save</ui-button>
@@ -126,7 +126,7 @@ var panel ={
     btnExport:'#btnExport',
     area:"#area",
     btnTree:"#btnTree",
-    input2:"#input2",
+    input3:"#input3",
     btnSave:"#btnSave",
     btnClear:"#btnClear",
     btnCancel:"#btnCancel",
@@ -187,7 +187,7 @@ var panel ={
         })
     })
     this.$btnExport.addEventListener('confirm',()=>{
-        Editor.Ipc.sendToMain("bundle:export",this.$input2.value)
+        Editor.Ipc.sendToMain("bundle:export",this.$input3.value)
     })
     this.$btnTree.addEventListener('confirm',()=>{
         Editor.Ipc.sendToMain('bundle:showTree',this.$select.value)
