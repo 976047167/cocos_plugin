@@ -37,7 +37,11 @@ function loadSettings() {
     settings = json
 
   }
-  loadBundleInfo()
+  try{
+    loadBundleInfo()
+  }catch(e){
+    Editor.log(e)
+  }
 }
 function loadBundleInfo(){
   bundleInfo.bundleIdList = settings.bundleIdList
@@ -57,6 +61,10 @@ function loadBundleInfo(){
     for (var j = 0;j<settings.bundleAsset[i].length;j++){
       var uuid = settings.bundleAsset[i][j]
       var info = Editor.assetdb.assetInfoByUuid(uuid)
+      if(!info){
+        Editor.log(uuid)
+        return
+      }
       if (info.type === "folder"){
         var filelist = fs.readdirSync(info.path)
         filelist.forEach(f=>{
