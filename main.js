@@ -175,6 +175,7 @@ module.exports = {
   load() {
     Editor.Builder.on('build-start', exportOnBuild);
     Editor.Builder.on('build-finished', keepFile);
+
   },
 
   unload() {
@@ -183,6 +184,10 @@ module.exports = {
   },
 
   messages: {
+    'scene:ready'(){
+      loadSettings()
+      exportSettings()
+    },
     'showDep'(_, bundleId) {
       getDep(bundleId);
     },
