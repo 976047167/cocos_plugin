@@ -143,6 +143,11 @@ function exportSettings(url) {
 function test() {
 }
 function keepFile(options, callback) {
+  Editor.log(JSON.stringify(options))
+  if(options.platform !== "wechatgame"){
+    callback()
+    return
+  }
   loadSettings()
   if (!bundleInfo.bundleToUuid ||
      !bundleInfo.bundleKeepMark) {
