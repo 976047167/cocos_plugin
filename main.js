@@ -144,7 +144,7 @@ function test() {
 }
 function keepFile(options, callback) {
   Editor.log(JSON.stringify(options))
-  if(options.platform !== "wechatgame"){
+  if(options.platform !== "mini-game"){
     callback()
     return
   }
